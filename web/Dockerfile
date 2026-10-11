@@ -68,6 +68,13 @@ RUN --mount=type=cache,id=drweb-mix-hex,target=/root/.hex,sharing=locked \
     mix deps.get --only $MIX_ENV && \
     mix release && cp -a /app/_build/${MIX_ENV}/rel/demo_runner_web /app/release
 
+# Hologram hardcodes --sourcemap, so the in-image compile regenerates
+# priv/static/hologram/*.js.map (gitignored in-repo precisely because their
+# sourcesContent embeds the build machine's absolute checkout paths) and
+# mix release folds them into the release dir. Strip them before the
+# production stage copies it — this is a public repo's shipped image.
+RUN find /app/release -name "*.js.map" -delete
+
 FROM ${BASE_IMAGE} AS production
 
 WORKDIR /app
