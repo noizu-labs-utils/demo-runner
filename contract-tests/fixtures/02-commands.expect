@@ -1,0 +1,4 @@
+contains:$ echo one
+contains:two words here
+contains:side effects are real
+file:note.txt=side effects are real

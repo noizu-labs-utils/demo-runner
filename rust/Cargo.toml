@@ -1,0 +1,13 @@
+[package]
+name = "demo-runner"
+version = "0.1.0"
+edition = "2021"
+description = "Typewriter-style scripted terminal demo player"
+license = "MIT"
+
+# No external dependencies — std only.
+
+[profile.release]
+strip = true
+lto = true
+opt-level = "z"

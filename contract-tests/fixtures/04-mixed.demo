@@ -1,0 +1,21 @@
+# Everything Together
+
+$ echo step-1 > s1.txt
+
+## Build side-effect files from typed commands.
+
+$ echo step-2 > s2.txt
+
+$ cat s1.txt s2.txt
+
+@sleep 0.1
+
+Narrative between commands.
+
+$ printf 'quoted "args" and $ymbols\n'
+
+@input looks like the operator typing
+
+# Fin
+
+$ echo mixed-done

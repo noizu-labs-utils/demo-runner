@@ -1,0 +1,90 @@
+# tabbing-on tour
+
+## Ported from tabbing-on's script.md demo script.
+## Requires tabbing-on installed and on PATH — demo-runner picks up the
+## integration automatically when the tabbing-on shell adapter is found.
+
+# Act 1: Setup & Help
+
+$ eval "$(tabbing-init zsh)"
+
+$ tabbing-on help
+
+## What emojis and colors are available?
+
+$ tabbing-on emojis
+
+$ tabbing-on colors
+
+# Act 2: Basic Title & Status
+
+## Set a tab title with emoji, color highlight, and urgency.
+## Watch your terminal's tab as each command runs.
+
+$ tabbing-on "The Great American Novel" -blue "Pick Genre" -rocket
+
+$ tabbing-on
+
+$ tabbing-status -brain "Research Train Schedules"
+
+$ tabbing-status -fire "Write hype blog"
+
+$ tabbing-on "Expunge Novel Plans" -red "Holding back tears" -pri0
+
+$ tabbing-on
+
+# Act 3: Todo Management
+
+## Start a real project and add subtasks.
+
+$ tabbing-on "Acme Dashboard" -green "Planning" -gear -pri4
+
+$ tabbing-todo "K8 infra setup" -e gear -m "Deploy to staging cluster"
+
+$ tabbing-todo "UX Design" -e art -m "Figma mockups"
+
+$ tabbing-todo
+
+## Pick one to work on (piped answer stands in for the interactive prompt).
+
+$ echo "1" | tabbing-todo --pick
+
+$ tabbing-on
+
+## Mark it done, pick the next.
+
+$ tabbing-todo --done
+
+$ tabbing-on
+
+# Act 4: Recording
+
+## Create a sample .cast recording and play it back with asciinema.
+
+$ _tabbing_demo_create_sample_cast
+
+$ tabbing-recordings
+
+$ _tabbing_demo_play_recording
+
+# Act 5: Terminal Detection
+
+$ tabbing-on --terminal-info
+
+# Act 6: History & Reporting
+
+## Every title/status change is logged with timestamps.
+
+$ tabbing-report
+
+## Same data as Mermaid syntax — paste into docs.
+
+$ tabbing-report --mermaid
+
+$ tabbing-history "Novel"
+
+# Act 7: Full Info Dump
+
+$ tabbing-info
+
+@prompt Press Enter to finish...

@@ -1,0 +1,37 @@
+# demo-runner
+
+## A typewriter-style scripted terminal demo player.
+## Headings with one hash appear instantly, descriptions with two.
+
+This plain line is narrative text — printed verbatim.
+
+$ echo "This command was typed character-by-character, then executed."
+
+# Directives
+
+## @sleep pauses, @input simulates the operator typing,
+## and @clear wipes the screen.
+
+@sleep 1
+
+@input simulated keystrokes appear like this
+
+$ printf 'Side effects are real: anything a shell can do.\n'
+
+$ echo "Each command pauses briefly so viewers can follow along."
+
+@clear
+
+# Speed Control
+
+## Re-run with --fast, --slow, --speed medium, or --no-pause.
+## Or export DEMO_RUNNER_SPEED=fast (TABBING_DEMO_SPEED also works).
+
+$ echo "Try: demo-runner --fast examples/tour.demo"
+
+# Going Further
+
+## examples/tabbing-on-tour.demo drives terminal tab titles via the
+## optional tabbing-on integration — it needs tabbing-on installed.
+
+$ echo "Enjoy!"

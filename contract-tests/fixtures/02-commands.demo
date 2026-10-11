@@ -1,0 +1,9 @@
+# Commands Are Typed, Then Run
+
+$ echo one
+
+$ echo two words here
+
+$ printf 'side effects are real\n' > note.txt
+
+$ cat note.txt

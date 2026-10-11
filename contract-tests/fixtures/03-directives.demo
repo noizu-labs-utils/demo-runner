@@ -1,0 +1,17 @@
+# Directive Coverage
+
+## @sleep pauses without printing anything.
+
+@sleep 0.1
+
+## @input types simulated keystrokes.
+
+@input yes please
+
+## @clear wipes the screen.
+
+@clear
+
+$ echo after-clear-works
+
+@sleep 0.1

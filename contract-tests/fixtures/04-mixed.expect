@@ -1,0 +1,7 @@
+contains:step-1
+contains:step-2
+contains:quoted "args" and $ymbols
+contains:mixed-done
+contains:looks like the operator typing
+file:s1.txt=step-1
+file:s2.txt=step-2
