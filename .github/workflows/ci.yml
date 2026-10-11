@@ -9,11 +9,11 @@ name: CI
 # image is pushed to ops.noizu.com as sha-* and the helm values are
 # bumped [skip ci]. ArgoCD auto-syncs helm/demo-runner-site @ main.
 #
-# BRANCH DIVERGENCE vs fleet siblings: this repo has ONLY main — it is
-# both the integration and the release branch (siblings reach main via
-# develop -> stage -> main). The push-to-main gate therefore fires on
-# the PR merge itself: every merge to main publishes a release image and
-# bumps the chart; there is no way to land on main without releasing.
+# BRANCH MODEL (fleet convention): feature PRs target develop; releases
+# flow develop -> stage -> main via regular merge commits (never squash).
+# build-push and bump-chart are gated on push to main, so they fire only
+# on a release merge reaching main — landing work in develop never
+# publishes an image or bumps the chart.
 
 on:
   push:
