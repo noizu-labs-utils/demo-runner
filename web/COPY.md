@@ -204,7 +204,7 @@ feature-detected integration, silent degradation, contract suite runs without it
 | 14 | The unconditional wipe existed and `e16460f` made it opt-in | `contract-tests/run.sh` history comment; commit `e16460f` message |
 | 15 | Contract tests: shared fixture corpus, both implementations, scrubbed env (no TABBING_ROOT), `.expect` assertions, real side effects | `contract-tests/run.sh` header + `fixtures/*` |
 | 16 | No hard tabbing-on dependency; feature-detected; silent degradation; helpers no-op without it | `README.md` integration section, `shell/bin/demo-runner` adapter lookup |
-| 17 | asciinema playback via helper (`_tabbing_demo_play_recording`), rust lacks it | `shell/bin/demo.rs` usage line (asciinema play), `README.md` matrix |
+| 17 | asciinema playback via helper (`_tabbing_demo_play_recording`), rust lacks it | `shell/bin/demo-runner` usage line (asciinema play), `README.md` matrix |
 | 18 | Install: `make install`, `make install-shell`, `make doctor`, `make check`; dev targets `compile`, `test`, `contract-test`; installs to `~/.local/bin/demo-runner{,-rs}` | `Makefile` |
 | 19 | Prereqs: zsh (shell), cargo (rust only), asciinema (optional recordings) | `README.md` prerequisites, `Makefile` doctor |
 | 20 | Not on any package manager; no one-liner/curl\|sh; packaged installs planned | `README.md` install honesty |

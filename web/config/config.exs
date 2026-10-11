@@ -6,7 +6,7 @@ config :demo_runner_web, DemoRunnerWeb.Endpoint,
   render_errors: [formats: [html: DemoRunnerWeb.ErrorHTML], layout: false],
   pubsub_server: DemoRunnerWeb.PubSub,
   live_view: [signing_salt: "demoRunnerWeb"],
-  secret_key_base: "DRw9xQ2eR7tY3uI6oP0aS5dF8gH1jK4lZ7xC2vB5nM8qW1eR4tY6uI9oP2aS5dGfJk",
+  secret_key_base: "DRw9xQ2eR7tY3uI6oP0aS5dF8gH1jK4lZ7xC2vB5nM8qW1eR4tY6uI9oP2aS5dGfJk", # dev default; prod may override via SECRET_KEY_BASE (runtime.exs)
   http: [ip: {127, 0, 0, 1}, port: 8170],
   server: true
 
