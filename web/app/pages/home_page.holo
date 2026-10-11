@@ -1,0 +1,384 @@
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="container hero-inner">
+    <p class="eyebrow">Typewriter-style scripted terminal demo player · zsh + Rust · MIT</p>
+    <h1>Write the demo once. Replay it live.</h1>
+    <p class="lede">
+      demo-runner reads a <code>.demo</code> script and plays it back like a human operator:
+      <code>#</code> and <code>##</code> headings appear instantly, <code>$ command</code> lines are
+      typed out character-by-character — then actually executed. <code>@sleep</code>,
+      <code>@input</code>, <code>@prompt</code> and <code>@clear</code> pace the show;
+      <code>--fast</code>, <code>--slow</code> and <code>--speed</code> retune it.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary btn-lg" href="#install">Install from source</a>
+      <a class="btn btn-ghost btn-lg" href="#format">The .demo format</a>
+    </div>
+    <p class="cta-fine"><em>Commands really execute · nothing is deleted by default · MIT licensed</em></p>
+
+    <figure class="install-block" id="install" aria-label="Install commands">
+      <figcaption class="install-title">Install — clone + make (prerequisites: zsh for the shell reference implementation; a Rust toolchain only for the Rust port; asciinema optional)</figcaption>
+      <pre><code>git clone https://github.com/noizu/demo-runner &amp;&amp; cd demo-runner
+
+make install            # builds rust (if cargo present) and installs both
+make install-shell      # shell reference only — no Rust toolchain needed
+make doctor             # check toolchain prerequisites and integration status
+make check              # verify installed binaries respond</code></pre>
+    </figure>
+    <p class="install-note">
+      demo-runner is not on Homebrew, crates.io, or npm — there is no one-liner and no
+      <code>curl | sh</code>. Packaged installs are planned, not available. Installs land at
+      <code>~/.local/bin/demo-runner</code> (shell, reference) and
+      <code>~/.local/bin/demo-runner-rs</code> (rust) — make sure <code>~/.local/bin</code> is on
+      your <code>PATH</code>.
+    </p>
+
+    <figure class="install-block" aria-label="First demo run">
+      <figcaption class="install-title">Then play the bundled tour</figcaption>
+      <pre><code>demo-runner                          # no arguments: plays examples/tour.demo
+demo-runner examples/tour.demo            # standalone tour of the format itself
+demo-runner-rs examples/tour.demo         # same tour, rust implementation
+demo-runner examples/tabbing-on-tour.demo # drives tab titles; needs tabbing-on</code></pre>
+    </figure>
+  </div>
+</section>
+
+<!-- BENEFITS (3-up) -->
+<section class="section" id="features">
+  <div class="container">
+    <h2 class="visually-hidden">Why demo-runner</h2>
+    <div class="benefit-grid">
+      <article class="card">
+        <h3>Demos as data</h3>
+        <p>
+          A demo is a plain-text <code>.demo</code> file — diffable, versionable, hand-editable.
+          Headings and narrative render instantly; commands type out with human jitter. Write it
+          once, replay it next week at any speed, hand it to a teammate.
+        </p>
+      </article>
+      <article class="card">
+        <h3>Real execution</h3>
+        <p>
+          <code>$</code> lines run for real — <code>eval</code> in your zsh (shell reference) or
+          <code>sh -c</code> (rust). Side effects are genuine: the contract fixtures assert that
+          files created by demo commands actually exist afterwards. Pauses after commands and
+          headings keep viewers with you.
+        </p>
+      </article>
+      <article class="card">
+        <h3>Safe by default</h3>
+        <p>
+          demo-runner never deletes anything unless you pass <code>--reset-state</code> — an
+          opt-in flag that prints the absolute path it is about to delete first, and supports
+          <code>--dry-run</code> to print without deleting. Pinned by contract tests, not by
+          promise. See <a href="#safety">the safety section</a>.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FORMAT -->
+<section class="section section-why" id="format">
+  <div class="container">
+    <h2>The .demo format</h2>
+    <p class="section-lede">
+      Nine line types, one file, no escaping rules to learn — straight from the README's format
+      reference.
+    </p>
+    <div class="table-scroll">
+      <table class="why-table">
+        <thead>
+          <tr>
+            <th scope="col">Line prefix</th>
+            <th scope="col">Behavior</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td># text</td><td>Bold cyan heading with underline (appears instantly)</td></tr>
+          <tr><td>## text</td><td>Dim description (appears instantly)</td></tr>
+          <tr><td>$ command</td><td>Typed out char-by-char, then executed (shell: eval; rust: sh -c)</td></tr>
+          <tr><td>@sleep N</td><td>Pause for N seconds (fractions allowed)</td></tr>
+          <tr><td>@input TEXT</td><td>Simulate typed stdin input (visual only)</td></tr>
+          <tr><td>@prompt TEXT</td><td>Pause and wait for Enter (shows TEXT; defaults to "Press Enter to continue...")</td></tr>
+          <tr><td>@clear</td><td>Clear the screen</td></tr>
+          <tr><td>(blank line)</td><td>Outputs a blank line</td></tr>
+          <tr><td>(anything else)</td><td>Printed as-is</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure class="install-block cli-block" aria-label="Example .demo script">
+      <figcaption class="install-title">An example script</figcaption>
+      <pre><code># Deploying the example site
+
+## Each command is typed out, then really runs.
+
+$ make test
+
+@sleep 1
+
+@prompt Press Enter to continue...
+
+$ echo "Side effects are real: this file exists now." &gt; proof.txt
+
+$ cat proof.txt</code></pre>
+    </figure>
+
+    <figure class="install-block cli-block" aria-label="Playback flags">
+      <figcaption class="install-title">Playback flags</figcaption>
+      <pre><code>demo-runner my-script.demo   # plays a custom script
+demo-runner --fast           # faster typing
+demo-runner --slow           # slower typing
+demo-runner --speed medium   # fast | medium | slow
+demo-runner --no-pause       # minimal pauses between commands (shell only)</code></pre>
+    </figure>
+    <p class="table-caption">
+      Speed can also come from the <code>DEMO_RUNNER_SPEED</code> environment variable
+      (<code>TABBING_DEMO_SPEED</code> is honoured for backwards compatibility) — shell
+      implementation only.
+    </p>
+  </div>
+</section>
+
+<!-- PARITY MATRIX -->
+<section class="section" id="parity">
+  <div class="container">
+    <h2>Two implementations, one reference</h2>
+    <p class="section-lede">
+      The zsh implementation under <code>shell/</code> is the reference — canonical and complete.
+      The Rust port under <code>rust/</code> is a lean, std-only binary that covers the core
+      format and starts faster. The matrix below is deliberately lopsided and this page will not
+      pretend otherwise: <strong>the shell reference carries 12 capabilities the Rust port lacks;
+      the Rust port adds exactly one the shell lacks</strong> (the inline
+      <code>@speed</code> directive), plus one cosmetic difference (an extra blank line after
+      each command).
+    </p>
+    <div class="table-scroll">
+      <table class="why-table parity-table">
+        <thead>
+          <tr>
+            <th scope="col">Feature</th>
+            <th scope="col">shell/ (zsh, reference)</th>
+            <th scope="col">rust/</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td># heading, bold + underline, instant</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-yes">Yes</span></td></tr>
+          <tr><td>## description, dim, instant</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-yes">Yes</span></td></tr>
+          <tr><td>$ typed char-by-char, then executed</td><td><span class="tag-yes">Yes (eval, current zsh)</span></td><td><span class="tag-yes">Yes (sh -c subprocess)</span></td></tr>
+          <tr><td>@sleep N (fractional)</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-yes">Yes</span></td></tr>
+          <tr><td>@input TEXT</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-yes">Yes</span></td></tr>
+          <tr><td>@prompt [TEXT]</td><td><span class="tag-yes">Yes (reads /dev/tty)</span></td><td><span class="tag-yes">Yes (reads stdin)</span></td></tr>
+          <tr><td>@clear</td><td><span class="tag-yes">Yes (external clear)</span></td><td><span class="tag-yes">Yes (inline ANSI)</span></td></tr>
+          <tr><td>Blank-line and verbatim-text passthrough</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-yes">Yes</span></td></tr>
+          <tr><td>--speed / --fast / --slow flags</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-yes">Yes</span></td></tr>
+          <tr><td>Typing jitter (~1/3 of chars at 2x delay)</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-yes">Yes</span></td></tr>
+          <tr><td>--help / -h</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-yes">Yes</span></td></tr>
+          <tr><td>Final Done! banner</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-yes">Yes</span></td></tr>
+          <tr class="parity-group"><td colspan="3">Reference-only — in shell/, missing from rust/</td></tr>
+          <tr><td>Demo commands can use shell functions/aliases</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-no">No</span> (plain sh, fresh process)</td></tr>
+          <tr><td>Speed via environment variable</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-no">No</span></td></tr>
+          <tr><td>--no-pause</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-no">No</span></td></tr>
+          <tr><td>Pause after each command (0.2–1.5 s)</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-no">No</span></td></tr>
+          <tr><td>Pause after headings</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-no">No</span></td></tr>
+          <tr><td>Default script when none given</td><td><span class="tag-yes">Yes (examples/tour.demo)</span></td><td><span class="tag-no">No</span> (path required)</td></tr>
+          <tr><td>Abort when a demo command fails</td><td><span class="tag-yes">Yes (set -e)</span></td><td><span class="tag-no">No</span> (exit status ignored)</td></tr>
+          <tr><td>Optional tabbing-on integration</td><td><span class="tag-yes">Yes (feature-detected)</span></td><td><span class="tag-no">No</span></td></tr>
+          <tr><td>_tabbing_demo_create_sample_cast / _tabbing_demo_play_recording helpers</td><td><span class="tag-yes">Yes (with tabbing-on)</span></td><td><span class="tag-no">No</span> (helpers absent)</td></tr>
+          <tr><td>asciinema playback inside demos</td><td><span class="tag-yes">Yes (via helper)</span></td><td><span class="tag-no">No</span></td></tr>
+          <tr><td>--reset-state (opt-in tabbing state-dir wipe, prints path first)</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-no">No</span> — rust never touches the tabbing state dir, nothing to reset</td></tr>
+          <tr><td>--dry-run (with --reset-state: print, don't delete)</td><td><span class="tag-yes">Yes</span></td><td><span class="tag-no">No</span> (no --reset-state to dry-run)</td></tr>
+          <tr class="parity-group"><td colspan="3">Rust-only</td></tr>
+          <tr><td>@speed fast|medium|slow inline directive</td><td><span class="tag-no">No</span></td><td><span class="tag-yes">Yes</span></td></tr>
+          <tr><td>Extra blank line after each command</td><td><span class="tag-no">No</span></td><td><span class="tag-yes">Yes</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">
+      Small print: "fast" is 10 ms/char in shell vs 15 ms/char in rust; an unknown --speed value
+      silently falls back to medium in shell but exits 1 in rust. Full matrix lives in the
+      README's Feature parity matrix section.
+    </p>
+  </div>
+</section>
+
+<!-- SAFETY -->
+<section class="section section-why" id="safety">
+  <div class="container">
+    <h2>Nothing is deleted by default — ever</h2>
+    <p class="section-lede">
+      A tool that executes your commands should be boring about destruction. This one is.
+    </p>
+    <div class="benefit-grid">
+      <article class="card">
+        <h3>The default run touches nothing</h3>
+        <p>
+          A plain demo-runner run does not delete anything. The only destructive path in the tool
+          is <code>--reset-state</code>, which exists only for the optional tabbing-on
+          integration: it deletes the tabbing state dir — <code>$XDG_STATE_HOME/tabbing</code>,
+          defaulting to <code>~/.local/state/tabbing</code> (per-tab history, todos and
+          asciinema recordings). Without the flag, the on-disk state dir is never touched.
+        </p>
+      </article>
+      <article class="card">
+        <h3>Destruction is opt-in, loud, and previewable</h3>
+        <p>
+          <code>--reset-state</code> prints the absolute path <em>before</em> deleting it. It is
+          irreversible — demo-runner has no backup mechanism — which is exactly why it is off by
+          default. <code>--reset-state --dry-run</code> prints the target path and deletes
+          nothing; <code>--dry-run</code> on its own has no effect (demo commands still
+          execute).
+        </p>
+      </article>
+      <article class="card">
+        <h3>Pinned by contract tests</h3>
+        <p>
+          Three guard cases in <code>contract-tests/</code> run with a stub tabbing adapter so
+          the reset code path genuinely activates: a plain run keeps all state markers,
+          <code>--reset-state</code> deletes them and prints the path, and
+          <code>--reset-state --dry-run</code> keeps them and still prints the path. The first
+          case is the regression that matters — a plain run must never delete user state.
+        </p>
+      </article>
+    </div>
+    <p class="table-caption">
+      Honest history: the shell implementation once wiped that state dir unconditionally on
+      every run when the tabbing-on integration was active. That was a bug, and it is why the
+      wipe is now opt-in behind <code>--reset-state</code> with the guard tests above. "Trust
+      me" is not a safety property; a test that fails when the default changes is.
+    </p>
+  </div>
+</section>
+
+<!-- NEIGHBOURS -->
+<section class="section" id="neighbours">
+  <div class="container">
+    <h2>demo-runner and its neighbours</h2>
+    <p class="section-lede">
+      The neighbourhood is demo-magic, doitlive, and Charm's VHS. All good tools — here is where
+      demo-runner honestly differs.
+    </p>
+    <div class="table-scroll">
+      <table class="why-table">
+        <thead>
+          <tr>
+            <th scope="col">Tool</th>
+            <th scope="col">Approach</th>
+            <th scope="col">Where demo-runner differs</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>demo-magic</td>
+            <td>Bash helpers you source into your own script; the script is the driver</td>
+            <td>The demo is data: a .demo file a separate player interprets — replay it next week, retune the speed, no bespoke script to maintain</td>
+          </tr>
+          <tr>
+            <td>doitlive</td>
+            <td>Interactive replay — you press keys, it types ahead of you</td>
+            <td>demo-runner plays autonomously, headings and pacing included — no operator at the keys</td>
+          </tr>
+          <tr>
+            <td>VHS (Charm)</td>
+            <td>Renders a .tape script to GIF/video, headless, for embedding</td>
+            <td>demo-runner is live in your real terminal with real side effects — for stages, reviews and rehearsals (asciinema .cast playback is available via the optional tabbing-on integration)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">
+      Extracted from <a href="https://github.com/noizu/tabbing-on">noizu/tabbing-on</a>, where it
+      lived as <code>bin/demo-runner</code>. It is now self-contained; the tabbing-on
+      integration is optional and feature-detected — when the adapter is absent, demo-runner
+      degrades silently and the tabbing-specific helpers become no-ops, so tabbing-aware demo
+      scripts still play. With tabbing-on installed, demos can drive terminal tab titles and
+      status, and the contract suite deliberately runs without it — standalone mode is
+      regression-tested on every run of <code>make test</code>.
+    </p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section section-faq" id="faq">
+  <div class="container container-narrow">
+    <h2>Questions you'd ask before running it</h2>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>Does it really execute the commands?</summary>
+        <p>
+          Yes — that is the point. <code>$</code> lines run in your shell: <code>eval</code> in
+          your current zsh for the reference implementation, <code>sh -c</code> in a fresh
+          process for the Rust port. Side effects are genuine — the contract fixtures assert
+          that files created by demo commands actually exist afterwards. Treat a
+          <code>.demo</code> script like a shell script: read it before you run it.
+        </p>
+      </details>
+      <details class="faq-item">
+        <summary>Which implementation should I use?</summary>
+        <p>
+          The zsh shell implementation — it is the reference, and the
+          <a href="#parity">parity matrix</a> is lopsided in its favour. Reach for the Rust
+          binary if you want a lean, std-only build of the core format (plus inline
+          <code>@speed</code>) and can live without the rest. macOS ships zsh; on Linux install
+          the <code>zsh</code> package.
+        </p>
+      </details>
+      <details class="faq-item">
+        <summary>Is this demo-magic, doitlive, or VHS?</summary>
+        <p>
+          No — see <a href="#neighbours">the table above</a>. demo-magic embeds helpers in your
+          own script; doitlive needs you at the keys; VHS renders a movie to a file. demo-runner
+          keeps the demo as a text file and plays it live in your real terminal.
+        </p>
+      </details>
+      <details class="faq-item">
+        <summary>Will it delete anything?</summary>
+        <p>
+          No — never by default. The single destructive flag is opt-in
+          <code>--reset-state</code> (integration-only), it prints its target path first, and it
+          has <code>--dry-run</code>. Three contract-test guard cases pin this; see
+          <a href="#safety">the safety section</a>.
+        </p>
+      </details>
+      <details class="faq-item">
+        <summary>Do I need tabbing-on?</summary>
+        <p>
+          No. demo-runner has no hard dependency — a <code>.demo</code> file that uses only
+          headings, commands and directives runs correctly on a clean machine with nothing else
+          installed. That is a contract test, not a claim. With tabbing-on installed, demos can
+          additionally drive terminal tab titles and play asciinema recordings.
+        </p>
+      </details>
+      <details class="faq-item">
+        <summary>How do I install it?</summary>
+        <p>
+          Clone the repo and run <code>make install</code> (or <code>make install-shell</code>
+          for the shell reference only) — see the box at the top. Prerequisites: zsh for the
+          reference implementation; a Rust toolchain only for the Rust port; asciinema only for
+          recording playback. It is not on Homebrew, crates.io, or npm; packaged installs are
+          planned.
+        </p>
+      </details>
+      <details class="faq-item">
+        <summary>What's the license?</summary>
+        <p>MIT — same license and author as tabbing-on, where demo-runner was born.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSING CTA -->
+<section class="closing" id="get-started">
+  <div class="container closing-inner">
+    <h2>Write the demo once. Replay it live.</h2>
+    <figure class="install-block" aria-label="Install commands">
+      <pre><code>git clone https://github.com/noizu/demo-runner &amp;&amp; cd demo-runner
+make compile &amp;&amp; make test
+make install &amp;&amp; make doctor</code></pre>
+    </figure>
+    <div class="cta-row">
+      <a class="btn btn-primary btn-lg" href="#install">Install from source</a>
+    </div>
+  </div>
+</section>

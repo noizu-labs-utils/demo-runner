@@ -1,0 +1,237 @@
+name: CI
+
+# Tool suites (rust unit + contract harness incl. the --reset-state
+# state-wipe guard) and the landing web/ ExUnit run on every push/PR.
+# The landing image (context: web/ — server-rendered Phoenix/Hologram on
+# Bandit) is smoke-built on every run — this also proves the gitignored
+# web/priv/static/hologram bundles regenerate in-image (MIX_ENV=prod mix
+# compile runs the Hologram compiler unconditionally). On main ONLY the
+# image is pushed to ops.noizu.com as sha-* and the helm values are
+# bumped [skip ci]. ArgoCD auto-syncs helm/demo-runner-site @ main.
+#
+# BRANCH MODEL (fleet convention): feature PRs target develop; releases
+# flow develop -> stage -> main via regular merge commits (never squash).
+# build-push and bump-chart are gated on push to main, so they fire only
+# on a release merge reaching main — landing work in develop never
+# publishes an image or bumps the chart.
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Never cancel release pushes.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  REGISTRY: ops.noizu.com
+  IMAGE: ops.noizu.com/demo-runner.therobotlives.com/web
+
+jobs:
+  tool-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Contract harness drives the shell reference impl via /bin/zsh;
+      # ubuntu runners ship none.
+      - run: sudo apt-get update -y && sudo apt-get install -y zsh
+      # Pinned: floating `stable` adds lints each release and turns CI red unprompted.
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.99.0"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+      # make test = cargo build --release + cargo test + contract-tests/run.sh
+      # (7/7 checks incl. the state-wipe guard regression cases).
+      - run: make test
+
+  web-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    env:
+      MIX_ENV: test
+      # Hologram routes 404 in :test unless this is set; it also gates the
+      # Hologram compiler in :dev/:test (bundles regenerate on compile).
+      HOLOGRAM_START: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        id: beam
+        with:
+          version-file: web/.tool-versions
+          version-type: strict
+      - uses: actions/cache@v4
+        with:
+          path: |
+            web/deps
+            web/_build
+          key: ${{ runner.os }}-mix-${{ steps.beam.outputs.otp-version }}-${{ steps.beam.outputs.elixir-version }}-${{ hashFiles('web/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ steps.beam.outputs.otp-version }}-${{ steps.beam.outputs.elixir-version }}-
+      - run: mix deps.get
+      - run: mix compile
+      - run: mix test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-coverage
+          path: web/cover
+          if-no-files-found: ignore
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      # PRs restore the gha cache only; main pushes export it
+      # (stops PR cache churn).
+      - name: Build landing image
+        uses: docker/build-push-action@v6
+        with:
+          context: web
+          platforms: linux/amd64
+          load: true
+          push: false
+          tags: demo-runner-site:ci
+          cache-from: type=gha,scope=web
+          cache-to: ${{ github.event_name != 'pull_request' && 'type=gha,scope=web,mode=max' || '' }}
+      - name: Probe /healthz and hero content
+        run: |
+          docker run -d --name dr-landing -p 8170:8170 demo-runner-site:ci
+          trap 'docker rm -f dr-landing >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:8170/healthz | grep -q ok; then
+              PAGE=$(curl -fsS http://127.0.0.1:8170/)
+              echo "$PAGE" | grep -q "Write the demo once. Replay it live."
+              echo "$PAGE" | grep -q "Typewriter-style scripted terminal demo player"
+              echo "$PAGE" | grep -q "nothing is deleted by default"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "landing smoke failed"
+          docker logs dr-landing || true
+          exit 1
+
+  build-push:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [smoke, tool-test, web-test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require registry secrets
+        env:
+          REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+        run: |
+          if [ -z "$REGISTRY_USER" ] || [ -z "$REGISTRY_PASSWORD" ]; then
+            echo "::error::REGISTRY_USER / REGISTRY_PASSWORD missing on this repo"
+            exit 1
+          fi
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Short SHA
+        id: sha
+        run: echo "short=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+      - name: Build & push landing
+        uses: docker/build-push-action@v6
+        with:
+          context: web
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.IMAGE }}:sha-${{ steps.sha.outputs.short }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
+
+  bump-chart:
+    needs: build-push
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump image tag
+        run: |
+          SHORT=${GITHUB_SHA::7}
+          sed -i -E "s|(image: ops\.noizu\.com/demo-runner\.therobotlives\.com/web:).*|\1sha-${SHORT}|" helm/demo-runner-site/values.yaml
+      - name: Commit & push
+        run: |
+          git config user.name "demo-runner-ci"
+          git config user.email "ci@noizu.com"
+          git add helm/demo-runner-site/values.yaml
+          git diff --cached --quiet && exit 0
+          git commit -m "ci: deploy sha-${GITHUB_SHA::7} [skip ci]"
+          git push
+
+  ci-timing:
+    # PR-run timing tracker (fleet standard). Warn-only: never blocks.
+    # Thresholds are repo/org Variables PR_STEP_MAX_MINUTES / PR_RUN_MAX_MINUTES, defaults 4/7.
+    needs: [tool-test, web-test, smoke]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - name: Track timing thresholds
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_STARTED_AT: ${{ github.run_started_at }}
+          STEP_MAX_MIN: ${{ vars.PR_STEP_MAX_MINUTES || '4' }}
+          RUN_MAX_MIN: ${{ vars.PR_RUN_MAX_MINUTES || '7' }}
+        run: |
+          set -euo pipefail
+          SUMMARY="$GITHUB_STEP_SUMMARY"
+          jobs_json=""
+          for i in 1 2 3; do
+            jobs_json=$(curl -sf -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$REPO/actions/runs/$RUN_ID/jobs?per_page=100") && break
+            sleep 5
+          done
+          [ -n "$jobs_json" ] || { echo "::warning title=CI timing::could not fetch run jobs"; exit 0; }
+          {
+            echo "## CI timing (thresholds: step ${STEP_MAX_MIN}m / run ${RUN_MAX_MIN}m)"
+            echo
+            echo "| job | step | duration | status |"
+            echo "|---|---|---|---|"
+          } >> "$SUMMARY"
+          flagged=0
+          steps_sum=0
+          while IFS=$'\t' read -r job step start end; do
+            [ -n "$job" ] || continue
+            s=$(date -d "$start" +%s); e=$(date -d "$end" +%s)
+            dur=$((e - s)); thr=$((STEP_MAX_MIN * 60))
+            steps_sum=$((steps_sum + dur))
+            if [ "$dur" -gt "$thr" ]; then
+              flagged=$((flagged + 1))
+              echo "::warning title=CI timing::\"$step\" (job: $job) took $((dur / 60))m$((dur % 60))s — over the ${STEP_MAX_MIN}m step threshold"
+              echo "| \`$job\` | \`$step\` | $((dur / 60))m$((dur % 60))s | ⚠️ over ${STEP_MAX_MIN}m |" >> "$SUMMARY"
+            else
+              echo "| \`$job\` | \`$step\` | $((dur / 60))m$((dur % 60))s | ok |" >> "$SUMMARY"
+            fi
+          done < <(echo "$jobs_json" | jq -r '
+            .jobs[] | select(.name | test("^(tool-test|web-test|smoke)$")) | .name as $job |
+            .steps[] | select(.status == "completed" and .conclusion != "skipped" and .conclusion != null) |
+            [$job, .name, .started_at, .completed_at] | @tsv')
+          start=$(date -d "$RUN_STARTED_AT" +%s); now=$(date +%s)
+          wall=$((now - start)); run_thr=$((RUN_MAX_MIN * 60))
+          echo
+          echo "| **steps sum** | test jobs, work only | $((steps_sum / 60))m$((steps_sum % 60))s | $( [ "$steps_sum" -gt "$run_thr" ] && echo "⚠️ over ${RUN_MAX_MIN}m" || echo ok) |" >> "$SUMMARY"
+          echo "| **wall clock** | queue + work | $((wall / 60))m$((wall % 60))s | info |" >> "$SUMMARY"
+          if [ "$steps_sum" -gt "$run_thr" ]; then
+            echo "::warning title=CI timing::acceptance steps sum to $((steps_sum / 60))m$((steps_sum % 60))s — over the ${RUN_MAX_MIN}m run threshold (wall clock: $((wall / 60))m)"
+          fi
+          echo; echo "_${flagged} step(s) over threshold._" >> "$SUMMARY"
