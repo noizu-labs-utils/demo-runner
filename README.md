@@ -75,11 +75,22 @@ demo-runner --fast                   # faster typing
 demo-runner --slow                   # slower typing
 demo-runner --speed medium           # fast | medium | slow
 demo-runner --no-pause               # minimal pauses between commands (shell only)
+demo-runner --reset-state            # delete the tabbing state dir first (see warning)
+demo-runner --reset-state --dry-run  # print what would be deleted; delete nothing
 ```
 
 Speed can also be set with the `DEMO_RUNNER_SPEED` environment variable
 (`TABBING_DEMO_SPEED` is honoured for backwards compatibility) — shell
 implementation only.
+
+**`--reset-state` is destructive and irreversible.** It deletes
+`${XDG_STATE_HOME:-~/.local/state}/tabbing` — every tab's history, todos
+and asciinema recordings — before the demo starts (tabbing-on integration
+active only), and prints the absolute path before deleting it. demo-runner
+has **no backup mechanism**: deleted data cannot be recovered. Without the
+flag, demo-runner never deletes anything. `--dry-run` modifies
+`--reset-state` to print the target path and delete nothing; on its own it
+has no effect (demo commands still execute).
 
 Try the bundled examples:
 
@@ -110,6 +121,8 @@ only tracks the pre-extraction state).
 | `--speed` / `--fast` / `--slow` flags | Yes | Yes |
 | Speed via environment variable | Yes | No |
 | `--no-pause` | Yes | No |
+| `--reset-state` (opt-in tabbing state-dir wipe, prints path first) | Yes | No (rust never touches the tabbing state dir — nothing to reset) |
+| `--dry-run` (with `--reset-state`: print, don't delete) | Yes | No (no `--reset-state` to dry-run) |
 | Pause after each command | Yes (0.2–1.5 s) | No |
 | Pause after headings | Yes | No |
 | Default script when none given | Yes (`examples/tour.demo`) | No (path required) |
@@ -140,9 +153,10 @@ shell adapter, so demos can drive terminal tab titles and status:
 - `tabbing-*` commands work inside `$` lines,
 - `_tabbing_demo_create_sample_cast` creates a sample asciinema recording,
 - `_tabbing_demo_play_recording` plays it back (needs asciinema),
-- tab state is reset before each run so demos start clean (this deletes
-  `${XDG_STATE_HOME:-~/.local/state}/tabbing` — with the integration
-  active only, matching tabbing-on's own showcase behaviour).
+- in-memory tab variables are reset before each run so demos start clean;
+  the on-disk state dir is touched **only** when `--reset-state` is passed
+  (integration mode only — see the warning under Usage). The default run
+  deletes nothing.
 
 Lookup order for the adapter: `$TABBING_ROOT/shell/tabbing.zsh`, then
 `${XDG_DATA_HOME:-~/.local/share}/tabbing-on/shell/tabbing.zsh` (tabbing-on's

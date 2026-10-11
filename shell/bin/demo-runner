@@ -15,6 +15,11 @@
 #   demo-runner [script.demo]      # default: examples/tour.demo
 #   demo-runner --speed fast       # fast/medium/slow
 #   demo-runner --no-pause         # skip inter-command pauses
+#   demo-runner --reset-state      # delete tabbing state dir first
+#                                  # (IRREVERSIBLE, no backup; prints path)
+#   demo-runner --reset-state --dry-run
+#                                  # print what would be deleted; delete
+#                                  # nothing
 #
 # tabbing-on integration is OPTIONAL and feature-detected: when the
 # tabbing-on shell adapter is found (see _demo_find_tabbing_zsh below),
@@ -37,6 +42,8 @@ _DEMO_PAUSE=1        # pause between commands
 _DEMO_HEADING_PAUSE=1 # pause after headings
 _DEMO_SCRIPT=""
 _DEMO_NO_PAUSE=0
+_DEMO_RESET_STATE=0   # --reset-state: delete the tabbing state dir (opt-in)
+_DEMO_DRY_RUN=0       # --dry-run: with --reset-state, print instead of delete
 
 # Parse args
 while [[ $# -gt 0 ]]; do
@@ -46,6 +53,8 @@ while [[ $# -gt 0 ]]; do
     --fast)     _DEMO_SPEED="fast"; shift ;;
     --slow)     _DEMO_SPEED="slow"; shift ;;
     --no-pause) _DEMO_NO_PAUSE=1; shift ;;
+    --reset-state) _DEMO_RESET_STATE=1; shift ;;
+    --dry-run)     _DEMO_DRY_RUN=1; shift ;;
     --help|-h)
       printf 'demo-runner — Typewriter-style demo runner\n\n'
       printf 'Usage: demo-runner [options] [script.demo]\n\n'
@@ -54,6 +63,14 @@ while [[ $# -gt 0 ]]; do
       printf '  --fast                     Shorthand for --speed fast\n'
       printf '  --slow                     Shorthand for --speed slow\n'
       printf '  --no-pause                 Skip inter-command pauses\n'
+      printf '  --reset-state              Delete the tabbing state dir before the\n'
+      printf '                             demo starts and print its path first.\n'
+      printf '                             WARNING: irreversible; destroys all\n'
+      printf '                             history/todos/recordings; NO backup.\n'
+      printf '  --dry-run                  With --reset-state: print the path that\n'
+      printf '                             would be deleted and delete nothing.\n'
+      printf '                             Alone it has no effect (commands still\n'
+      printf '                             execute).\n'
       printf '\nSpeed can also be set via DEMO_RUNNER_SPEED (or TABBING_DEMO_SPEED).\n'
       printf 'Default script: examples/tour.demo (this repo checkout).\n'
       exit 0
@@ -62,6 +79,10 @@ while [[ $# -gt 0 ]]; do
       _DEMO_SCRIPT="$1"; shift ;;
   esac
 done
+
+if [[ "${_DEMO_DRY_RUN}" -eq 1 && "${_DEMO_RESET_STATE}" -eq 0 ]]; then
+  printf 'demo-runner: note: --dry-run only affects --reset-state; demo commands still execute\n' >&2
+fi
 
 # Speed → character delay (seconds)
 case "$_DEMO_SPEED" in
@@ -207,10 +228,21 @@ if _DEMO_TABBING_ADAPTER="$(_demo_find_tabbing_zsh)"; then
 fi
 
 if [[ "${_DEMO_TABBING}" -eq 1 ]]; then
-  # Clear any prior state and data (matches tabbing-on's showcase demo
-  # semantics: every run starts from a clean tab state).
+  # Reset in-memory tab env so demos start from clean tab variables.
+  # The on-disk state dir is deleted ONLY when --reset-state is given:
+  # it holds real per-tab history/todos/recordings, deletion is
+  # irreversible, and there is no backup mechanism. (This wipe used to
+  # run unconditionally on every invocation, destroying real user data.)
   unset TAB_TITLE TAB_STATUS TAB_URGENCY TAB_EMOJI TAB_HIGHLIGHT TAB_ID TAB_RECORDING
-  rm -rf "${XDG_STATE_HOME:-$HOME/.local/state}/tabbing" 2>/dev/null || true
+  if [[ "${_DEMO_RESET_STATE}" -eq 1 ]]; then
+    _DEMO_TABBING_STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/tabbing"
+    if [[ "${_DEMO_DRY_RUN}" -eq 1 ]]; then
+      printf 'demo-runner: --dry-run: would delete tabbing state dir: %s\n' "${_DEMO_TABBING_STATE_DIR}"
+    else
+      printf 'demo-runner: --reset-state: deleting tabbing state dir (irreversible, no backup): %s\n' "${_DEMO_TABBING_STATE_DIR}"
+      rm -rf "${_DEMO_TABBING_STATE_DIR}" 2>/dev/null || true
+    fi
+  fi
 fi
 
 # ---------------------------------------------------------------------------
