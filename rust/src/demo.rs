@@ -1,3 +1,5 @@
+//! 〚📁:c571a9e0-578f-50e0-b776-e9069a3fdfdd〛 Rust demo player :: Parses and plays .demo scripts; sh -c execution, std-only.
+//!
 //! demo-runner — Typewriter-style scripted terminal demo player.
 //!
 //! Reads a `.demo` script and plays it back: headings appear instantly,

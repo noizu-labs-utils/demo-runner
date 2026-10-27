@@ -1,5 +1,7 @@
 import Config
 
+# 〚📁:2747a0cc-4b91-512b-83aa-ef2f563acb8b〛 Runtime config :: Prod env plumbing (BIND_IP / PORT / PHX_HOST / SECRET_KEY_BASE), tolerant of malformed values.
+
 # Runtime overrides for `mix release` containers. Only evaluated by the
 # release's config provider — dev/test keep the settings in config.exs.
 if config_env() == :prod do
