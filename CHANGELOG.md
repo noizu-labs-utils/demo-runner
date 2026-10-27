@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-10-28
+- docs: add AGENT-README.md (agent orientation)
+
 ## 2026-10-26
 - docs: doc-sweep — created PROJ-LAYOUT/ARCH/SCHEMA/THREAT-MODEL (+summaries); doc-pointer seed (.meta/pointers.yaml + 10 markers) merged via PR #4
 
