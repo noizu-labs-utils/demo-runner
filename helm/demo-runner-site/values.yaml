@@ -2,6 +2,7 @@
 # Deployed into the `apps` namespace by the ArgoCD application (destination),
 # like the fleet siblings. Image tags are bumped by CI (bump-chart job),
 # never by hand.
+# 〚📁:9ff078f7-c6ee-5f00-bb3e-4a4c27b5fb65〛 Chart values :: demo-runner.therobotlives.com deploy — CI-owned sha image tag, TLS, cloudflare-only ingress.
 
 fullnameOverride: demo-runner-site
 domain: demo-runner.therobotlives.com

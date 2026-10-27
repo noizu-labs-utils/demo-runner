@@ -1,0 +1,122 @@
+---
+pointers:
+  13cc693d-24f8-5ab8-9f4d-2aae41b6b750:
+    created_at: 2026-10-27T04:52:45.659033Z
+    description: Liveness/readiness 200 "ok" for k8s probes.
+    file_path: web/lib/demo_runner_web/controllers/health.ex
+    function: DemoRunnerWeb.Controllers.Health
+    kind: module
+    line: 3
+    locations:
+      - file_path: web/lib/demo_runner_web/controllers/health.ex
+        line: 3
+    token: 𓧒𓴿𓦱𓯰
+    updated_at: 2026-10-27T04:52:45.659033Z
+  1f2a0b7c-a6f4-53f5-a880-2ec651bd43b4:
+    created_at: 2026-10-27T04:52:45.659021Z
+    description: Plug pipeline — static assets, cookie session, Hologram router before Phoenix.
+    file_path: web/lib/demo_runner_web/endpoint.ex
+    function: DemoRunnerWeb.Endpoint
+    kind: module
+    line: 3
+    locations:
+      - file_path: web/lib/demo_runner_web/endpoint.ex
+        line: 3
+    token: 𓕯𔔦𓝈𓕄
+    updated_at: 2026-10-27T04:52:45.659021Z
+  2747a0cc-4b91-512b-83aa-ef2f563acb8b:
+    created_at: 2026-10-27T04:52:45.659026Z
+    description: Prod env plumbing (BIND_IP / PORT / PHX_HOST / SECRET_KEY_BASE), tolerant of malformed values.
+    file_path: web/config/runtime.exs
+    function: Runtime config
+    kind: file
+    line: 3
+    locations:
+      - file_path: web/config/runtime.exs
+        line: 3
+    token: 𓘹𓄆𓡛𓊛
+    updated_at: 2026-10-27T04:52:45.659026Z
+  3f545696-1d7a-5b98-89c6-b3d4eaa00dbf:
+    created_at: 2026-10-27T04:52:45.659036Z
+    description: Thin argv wrapper; forwards args to demo::run_demo.
+    file_path: rust/src/main.rs
+    function: Rust entrypoint
+    kind: file
+    line: 1
+    locations:
+      - file_path: rust/src/main.rs
+        line: 1
+    token: 𓪿𓶫𓉈𔕏
+    updated_at: 2026-10-27T04:52:45.659036Z
+  853cc9ae-0cb8-5440-8a10-187cc789648c:
+    created_at: 2026-10-27T04:52:45.659053Z
+    description: 'Project overview: .demo format, install, usage, parity matrix, contract tests.'
+    file_path: README.md
+    function: demo-runner README
+    kind: file
+    line: 3
+    locations:
+      - file_path: README.md
+        line: 3
+    token: 𔉎𓉜𓌐𓍬
+    updated_at: 2026-10-27T04:52:45.659053Z
+  9ff078f7-c6ee-5f00-bb3e-4a4c27b5fb65:
+    created_at: 2026-10-27T04:52:45.658993Z
+    description: demo-runner.therobotlives.com deploy — CI-owned sha image tag, TLS, cloudflare-only ingress.
+    file_path: helm/demo-runner-site/values.yaml
+    function: Chart values
+    kind: file
+    line: 5
+    locations:
+      - file_path: helm/demo-runner-site/values.yaml
+        line: 5
+    token: 𓅨𓋝𓷞𔁕
+    updated_at: 2026-10-27T04:52:45.658993Z
+  aaeff119-606e-53e4-92ad-8713b195f917:
+    created_at: 2026-10-27T04:52:45.659058Z
+    description: Single Hologram route /; SSR-only landing page.
+    file_path: web/app/pages/home_page.ex
+    function: DemoRunnerWeb.Pages.HomePage
+    kind: module
+    line: 3
+    locations:
+      - file_path: web/app/pages/home_page.ex
+        line: 3
+    token: 𔋷𓽡𓷢𔁇
+    updated_at: 2026-10-27T04:52:45.659058Z
+  c571a9e0-578f-50e0-b776-e9069a3fdfdd:
+    created_at: 2026-10-27T04:52:45.659029Z
+    description: Parses and plays .demo scripts; sh -c execution, std-only.
+    file_path: rust/src/demo.rs
+    function: Rust demo player
+    kind: file
+    line: 1
+    locations:
+      - file_path: rust/src/demo.rs
+        line: 1
+    token: 𓥁𓾹𔅍𓸽
+    updated_at: 2026-10-27T04:52:45.659029Z
+  ccd1f850-1ec1-5711-8019-b868925e833a:
+    created_at: 2026-10-27T04:52:45.659049Z
+    description: Phoenix routes; /healthz only — pages ride the Hologram router.
+    file_path: web/lib/demo_runner_web/router.ex
+    function: DemoRunnerWeb.Router
+    kind: module
+    line: 3
+    locations:
+      - file_path: web/lib/demo_runner_web/router.ex
+        line: 3
+    token: 𔂪𓊔𓲒𓩪
+    updated_at: 2026-10-27T04:52:45.659049Z
+  f1c3c64d-2d9e-541f-bd45-750a18d5159b:
+    created_at: 2026-10-27T04:52:45.659039Z
+    description: Root Holo layout — SEO/OG head, header nav, footer.
+    file_path: web/app/main_layout.ex
+    function: DemoRunnerWeb.MainLayout
+    kind: module
+    line: 3
+    locations:
+      - file_path: web/app/main_layout.ex
+        line: 3
+    token: 𓭹𔐣𓛓𓭛
+    updated_at: 2026-10-27T04:52:45.659039Z

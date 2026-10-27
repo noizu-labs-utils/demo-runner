@@ -1,3 +1,5 @@
+//! 〚📁:3f545696-1d7a-5b98-89c6-b3d4eaa00dbf〛 Rust entrypoint :: Thin argv wrapper; forwards args to demo::run_demo.
+
 mod demo;
 
 fn main() {

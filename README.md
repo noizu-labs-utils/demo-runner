@@ -1,5 +1,7 @@
 # demo-runner
 
+<!-- 〚📁:853cc9ae-0cb8-5440-8a10-187cc789648c〛 demo-runner README :: Project overview: .demo format, install, usage, parity matrix, contract tests. -->
+
 A typewriter-style scripted terminal demo player. It reads a `.demo` script
 and plays it back like a human operator: `#` and `##` headings appear
 instantly, `$ command` lines are typed out character-by-character and then

@@ -1,5 +1,7 @@
 defmodule DemoRunnerWeb.MainLayout do
   @moduledoc """
+  〚📦:f1c3c64d-2d9e-541f-bd45-750a18d5159b〛 DemoRunnerWeb.MainLayout :: Root Holo layout — SEO/OG head, header nav, footer.
+
   Root layout for the demo-runner landing page — head (SEO + OG), sticky header
   nav, footer. Dark-first typographic dev-tool theme; tokens in
   /assets/css/site.css. Copy source of truth: web/COPY.md.
